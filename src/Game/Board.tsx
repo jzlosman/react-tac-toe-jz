@@ -1,10 +1,11 @@
 import React, { PropsWithChildren } from "react";
 import DarkButton from "../Controls/DarkButton";
 import { Player } from "./hooks/useBoardState";
+import { Winner } from "./hooks/useWinDetector";
 import Square, { SquarePosition } from "./Square";
 export interface BoardProps {
 	layout: Player[][];
-	winner: Player;
+	winner: Winner;
 	currentPlayer: Player;
 	onPlayerChoice: (position: SquarePosition) => void;
 	onPlayAgain: () => void;
@@ -22,7 +23,7 @@ export default function Board({
 		if (layout[position.rowIndex][position.colIndex] !== "") {
 			return;
 		}
-		if (winner !== "") {
+		if (winner != null) {
 			return;
 		}
 		onPlayerChoice(position);
@@ -36,7 +37,10 @@ export default function Board({
 	return (
 		<div className={`relative flex flex-col items-center space-y-1`}>
 			{layout.map((rowSquare, rowIndex) => (
-				<div className={`flex flex-row items-center space-x-1`}>
+				<div
+					className={`flex flex-row items-center space-x-1`}
+					key={`row-${rowIndex}`}
+				>
 					{rowSquare.map((colSquare, colIndex) => (
 						<Square
 							key={`${rowIndex}:${colIndex}`}
@@ -48,11 +52,26 @@ export default function Board({
 					))}
 				</div>
 			))}
-			{winner !== "" && (
+			{winner != null && winner !== "" && (
 				<div className="absolute flex flex-row items-center inset-0 bg-slate-800 bg-opacity-40 !mt-0">
 					<div className="flex flex-col items-center w-full gap-2">
 						<h2 className="text-center font-bold text-5xl text-white w-full drop-shadow-md">
 							{winner} wins!
+						</h2>
+						<DarkButton
+							icon="rotate-right"
+							onClick={() => onPlayAgain()}
+						>
+							Play again
+						</DarkButton>
+					</div>
+				</div>
+			)}
+			{winner !== null && winner === "" && (
+				<div className="absolute flex flex-row items-center inset-0 bg-slate-800 bg-opacity-40 !mt-0">
+					<div className="flex flex-col items-center w-full gap-2">
+						<h2 className="text-center font-bold text-5xl text-white w-full drop-shadow-md">
+							Cat's Game!
 						</h2>
 						<DarkButton
 							icon="rotate-right"

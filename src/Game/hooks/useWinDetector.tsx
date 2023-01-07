@@ -1,8 +1,17 @@
 import { useState } from "react";
+import type { Board } from "./useBoardState";
 import { Player } from "./useBoardState";
+export interface WinDetectorResults {
+	winner: Winner;
+	checkForWinner: (board: Board) => Winner;
+	clearWinner: () => void;
+	countMoves: (board: Board) => number;
+}
 
-function useWinDetector(): [Player, (board: Player[][]) => Player, () => void] {
-	const [winner, setWinner] = useState<Player>(Player.NONE);
+export type Winner = Player | null;
+
+function useWinDetector(): WinDetectorResults {
+	const [winner, setWinner] = useState<Winner>(null);
 
 	function checkRows(board: Player[][]): Player {
 		for (let row of board) {
@@ -35,7 +44,7 @@ function useWinDetector(): [Player, (board: Player[][]) => Player, () => void] {
 		return Player.NONE;
 	}
 
-	function checkForWin(board: Player[][]): Player {
+	function checkForWinner(board: Board): Winner {
 		const rowWinner = checkRows(board);
 		if (rowWinner !== Player.NONE) {
 			setWinner(rowWinner);
@@ -54,15 +63,31 @@ function useWinDetector(): [Player, (board: Player[][]) => Player, () => void] {
 			return diagonalWinner;
 		}
 
-		setWinner(Player.NONE);
-		return Player.NONE;
+		if (countMoves(board) === Math.pow(board.length, 2)) {
+			// cat's game
+			setWinner(Player.NONE);
+			return Player.NONE;
+		}
+		setWinner(null);
+		return null;
 	}
 
 	function clearWinner() {
-		setWinner(Player.NONE);
+		setWinner(null);
 	}
 
-	return [winner, checkForWin, clearWinner];
+	function countMoves(board: Board): number {
+		return board.reduce((count, row) => (count += countMovesInRow(row)), 0);
+	}
+
+	function countMovesInRow(row: Player[]): number {
+		return row.reduce(
+			(count, square) => (count += square === Player.NONE ? 0 : 1),
+			0
+		);
+	}
+
+	return { winner, checkForWinner, clearWinner, countMoves };
 }
 
 export { useWinDetector };

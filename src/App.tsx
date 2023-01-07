@@ -10,9 +10,10 @@ import History from "./Game/History";
 import { useGameHistory } from "./Game/hooks/useGameHistory";
 import { useEffect } from "react";
 import { DateTime } from "luxon";
-import { useCallback } from "react";
+import MatchResults from "./Game/MatchResults";
 function App() {
-	const [winner, checkForWin, clearWinner] = useWinDetector();
+	const { winner, checkForWinner, clearWinner, countMoves } =
+		useWinDetector();
 
 	const { onSaveGame, onLoadGame } = useSaveManagement();
 
@@ -31,8 +32,8 @@ function App() {
 
 	function handlePlayerChoice(position: SquarePosition) {
 		markSquareForPlayer(currentPlayer, position);
-		const winningPlayer = checkForWin(layout);
-		if (winningPlayer !== "") {
+		const winningPlayer = checkForWinner(layout);
+		if (winningPlayer === Player.X || winningPlayer === Player.O) {
 			handleWinner(winningPlayer);
 		}
 	}
@@ -41,7 +42,7 @@ function App() {
 		onUpdateHistory({
 			winner: winningPlayer,
 			date: DateTime.now().toISO(),
-			moves: 10,
+			moves: countMoves(layout),
 		});
 	}
 
@@ -63,22 +64,22 @@ function App() {
 		if (loadedLayout.board && loadedLayout.currentPlayer) {
 			setLayout(loadedLayout.board);
 			setCurrentPlayer(loadedLayout.currentPlayer);
-			await checkForWin(loadedLayout.board);
+			checkForWinner(loadedLayout.board);
 		}
 	}
 
 	return (
 		<main className={`absolute inset-0 overflow-auto bg-slate-50 p-8`}>
 			<div
-				className={`mx-auto flex flex-col md:flex-row gap-4 items-start w-full md:w-1/2`}
+				className={`mx-auto flex flex-col md:flex-row gap-4 items-start w-full md:w-2/3 xl:w-1/2`}
 			>
-				<div className="flex flex-col w-fit gap-2">
+				<div className="flex flex-col w-full md:w-fit gap-2">
 					<h1 className={`text-center text-3xl font-semibold`}>
 						<span className={`text-red-700`}>Tic</span>-Tac-
 						<span className={`text-blue-700`}>Toe</span>
 					</h1>
 					<BoardSelector
-						sizes={[3, 6, 9]}
+						sizes={[3, 4, 5]}
 						onSelection={(size: number) => generateLayout(size)}
 					></BoardSelector>
 
@@ -91,7 +92,7 @@ function App() {
 						onPlayAgain={handlePlayAgain}
 					></Board>
 					<div
-						className={`flex flex-col md:flex-row gap-1.5 justify-between w-full`}
+						className={`flex flex-row gap-1.5 justify-between w-full`}
 					>
 						<LightButton icon="download" onClick={handleSave}>
 							Save
@@ -101,7 +102,13 @@ function App() {
 						</LightButton>
 					</div>
 				</div>
-				<History history={history}></History>
+				<div className="w-full flex-1 flex flex-col gap-6 mt-0 md:mt-24 divide-y divide-slate-300">
+					<MatchResults history={history}></MatchResults>
+					<History
+						history={history}
+						onClearHistory={onClearHistory}
+					></History>
+				</div>
 			</div>
 		</main>
 	);

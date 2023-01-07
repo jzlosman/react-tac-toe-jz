@@ -5,9 +5,10 @@ export enum Player {
 	X = "X",
 	O = "O",
 }
+export type Board = Player[][];
 
 export const useBoardState = () => {
-	const [layout, setLayout] = useState<Player[][]>([[Player.NONE]]);
+	const [layout, setLayout] = useState<Board>([[Player.NONE]]);
 
 	const generateLayout = (size: number) => {
 		const rowTemplate = Array.from(Array(size), (_) => "");
@@ -23,5 +24,10 @@ export const useBoardState = () => {
 		setLayout(newLayout);
 	};
 
-	return { setLayout, generateLayout, markSquareForPlayer, layout };
+	return {
+		setLayout,
+		generateLayout,
+		markSquareForPlayer,
+		layout,
+	};
 };

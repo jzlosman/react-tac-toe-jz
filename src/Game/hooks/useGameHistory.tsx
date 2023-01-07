@@ -22,7 +22,7 @@ export const useGameHistory = () => {
 		const currentHistory = [...history];
 		currentHistory.unshift(gameHistory);
 		setHistory(currentHistory);
-		window.localStorage.setItem("history", JSON.stringify(history));
+		window.localStorage.setItem("history", JSON.stringify(currentHistory));
 	};
 
 	const onClearHistory = () => {
